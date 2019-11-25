@@ -11,21 +11,67 @@ let { SelectControl } = wp.components;
 /**
  * Map Custom Statuses as options for SelectControl
  */
-let statuses = window.EditFlowCustomStatuses.map( s => ({ label: s.name, value: s.slug }) );
+let customStatuses = window.EditFlowStatuses.custom_statuses.map( s => ({ label: s.name, value: s.slug }) );
+
+// Trash isn't in `default_statuses` but we need to check for it
+let isCoreStatus = slug => window.EditFlowStatuses.default_statuses.find( s => s.slug === slug ) || slug === 'trash';
+let getCustomStatusLabel = slug => customStatuses.find( s => s.value === slug ).label;
 
 /**
  * Hack :(
  *
  * @see https://github.com/WordPress/gutenberg/issues/3144
  *
- * Gutenberg overrides the label of the Save button after save (i.e. "Save Draft"). But there's no way to subscribe to a "post save" message.
- *
- * So instead, we're keeping the button label generic ("Save"). There's a brief period where it still flips to "Save Draft" but that's something we need to work upstream to find a good fix for.
+ * @return boolean indicates whether label change suceeded
  */
-let sideEffectL10nManipulation = () => {
-  let node = document.querySelector('.editor-post-save-draft');
+let sideEffectL10nManipulation = ( status ) => {
+  const statusText = status ? `${ __( 'Save as' ) } ${status}` : `${ __( 'Save' ) }`
+  let node = getEditorPostSaveDraftDOM();
   if ( node ) {
-    document.querySelector( '.editor-post-save-draft' ).innerText = `${ __( 'Save' ) }`
+    node.innerText = statusText;
+  }
+}
+
+let getEditorPostSaveDraftDOM = () => {
+  return document.querySelector( '.editor-post-save-draft' );
+}
+
+/**
+ * Hack :(
+ * 
+ * @see https://github.com/WordPress/gutenberg/issues/3144
+ * 
+ * Gutenberg will also override the status set in '.editor-post-save-draft' after save, and there isn't yet a way
+ * to subscribe to a "post save" message. So instead set a timeout and override the text in '.editor-post-save-draft
+ * 
+ * The timeout for this method is an attempt to counteract https://github.com/WordPress/gutenberg/blob/95e769df1f82f6b0ef587d81af65dd2f48cd1c38/packages/editor/src/components/post-saved-state/index.js#L37-L42
+ * 
+ * It's effectively a mutation observer with a limit on the number of attempts it will poll the DOM
+ */
+let activePostStatusUpdateTimeout = null;
+let schedulePostStatusUpdater = ( timeout = 120, attempts = 20 ) => {
+  if ( attempts < 0 ) {
+    return;
+  }
+
+  let node = getEditorPostSaveDraftDOM();
+
+  if ( node ) {
+    let status = select( 'core/editor' ).getEditedPostAttribute( 'status' );
+    let statusLabel = getCustomStatusLabel(status);
+
+    if ( typeof status === 'undefined' || typeof statusLabel === 'undefined' || isCoreStatus( status ) ) {
+      return;
+    }
+    
+    sideEffectL10nManipulation ( statusLabel );
+    clearTimeout( activePostStatusUpdateTimeout );
+  } else {
+    // Clearing timeouts so we don't stack them
+    clearTimeout( activePostStatusUpdateTimeout );
+    activePostStatusUpdateTimeout = setTimeout(() => {
+      schedulePostStatusUpdater( timeout, attempts - 1 );
+    }, timeout);
   }
 }
 
@@ -51,7 +97,7 @@ subscribe( function () {
   // Update the "Save" button.
   var status = select( 'core/editor' ).getEditedPostAttribute( 'status' );
   if ( typeof status !== 'undefined' && status !== 'publish' ) {
-    sideEffectL10nManipulation();
+    schedulePostStatusUpdater();
   }
 } );
 
@@ -68,7 +114,7 @@ let EditFlowCustomPostStati = ( { onUpdate, status } ) => (
     { status !== 'publish' ? <SelectControl
       label=""
       value={ status }
-      options={ statuses }
+      options={ customStatuses }
       onChange={ onUpdate }
     /> : null }
 
@@ -88,7 +134,7 @@ const mapDispatchToProps = ( dispatch ) => {
   return {
     onUpdate( status ) {
       dispatch( 'core/editor' ).editPost( { status } );
-      sideEffectL10nManipulation();
+      schedulePostStatusUpdater();
     },
   };
 };
