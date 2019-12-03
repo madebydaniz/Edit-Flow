@@ -103,6 +103,8 @@ before_script:
     - phpunit --version
     - php --version
 
-script: phpunit
+script: 
+  - phpunit
+  - npm run test-e2e
 
 sudo: false
