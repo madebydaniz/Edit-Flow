@@ -94,6 +94,10 @@ install:
       npm run env connect
       npm run env cli plugin activate Edit-Flow
     fi
+  - |
+    if [[ "$INSTALL_COMPOSER" = "true" ]]; then
+      npm run env docker-run -- php composer install
+    fi
 
 before_script:
     - bash bin/install-wp-tests.sh wordpress_test root '' localhost $WP_VERSION
@@ -108,6 +112,6 @@ before_script:
 
 script: 
   - phpunit
-  - npm run test-e2e
+  - $( npm bin )/wp-scripts test-e2e --config=./tests/e2e/config/jest.config.js
 
 sudo: false
