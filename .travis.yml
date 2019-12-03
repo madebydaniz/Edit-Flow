@@ -27,28 +27,28 @@ env:
 matrix:
   include:
     # current stable release w/ multisite
-    - php: "5.6"
-      env: WP_VERSION=5.1 WP_MULTISITE=0
-    - php: "7.2"
-      env: WP_VERSION=5.1 WP_MULTISITE=0
-    - php: "7.3"
-      env: WP_VERSION=5.1 WP_MULTISITE=0
-    - php: "5.6"
-      env: WP_VERSION=5.1 WP_MULTISITE=1
-    - php: "7.2"
-      env: WP_VERSION=5.1 WP_MULTISITE=1
-    - php: "7.3"
-      env: WP_VERSION=5.1 WP_MULTISITE=1
-    - php: "5.6"
-      env: WP_VERSION=5.2 WP_MULTISITE=0
-    - php: "7.2"
-      env: WP_VERSION=5.2 WP_MULTISITE=0
-    - php: "7.3"
-      env: WP_VERSION=5.2 WP_MULTISITE=0
-    - php: "5.6"
-      env: WP_VERSION=5.2 WP_MULTISITE=1
-    - php: "7.2"
-      env: WP_VERSION=5.2 WP_MULTISITE=1
+    # - php: "5.6"
+    #   env: WP_VERSION=5.1 WP_MULTISITE=0
+    # - php: "7.2"
+    #   env: WP_VERSION=5.1 WP_MULTISITE=0
+    # - php: "7.3"
+    #   env: WP_VERSION=5.1 WP_MULTISITE=0
+    # - php: "5.6"
+    #   env: WP_VERSION=5.1 WP_MULTISITE=1
+    # - php: "7.2"
+    #   env: WP_VERSION=5.1 WP_MULTISITE=1
+    # - php: "7.3"
+    #   env: WP_VERSION=5.1 WP_MULTISITE=1
+    # - php: "5.6"
+    #   env: WP_VERSION=5.2 WP_MULTISITE=0
+    # - php: "7.2"
+    #   env: WP_VERSION=5.2 WP_MULTISITE=0
+    # - php: "7.3"
+    #   env: WP_VERSION=5.2 WP_MULTISITE=0
+    # - php: "5.6"
+    #   env: WP_VERSION=5.2 WP_MULTISITE=1
+    # - php: "7.2"
+    #   env: WP_VERSION=5.2 WP_MULTISITE=1
     - php: "7.3"
       env: WP_VERSION=5.2 WP_MULTISITE=1
 
@@ -113,5 +113,3 @@ install:
 script: 
   # - phpunit
   - $( npm bin )/wp-scripts test-e2e --config=./tests/e2e/config/jest.config.js
-
-sudo: false
