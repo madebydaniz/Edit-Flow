@@ -16,7 +16,6 @@ env:
     - WP_DEVELOP_DIR: ./wordpress
     - WP_VERSION: latest #Current stable release
     - WP_MULTISITE: 0
-    - INSTALL_COMPOSER: true
     - INSTALL_WORDPRESS: true
 
 # Test WP 5.1 and 5.2 and on PHP 5.6, 7.2 and 7.3 (w and w/o multisite enabled)
@@ -95,24 +94,20 @@ install:
       npm run env connect
       npm run env cli plugin activate Edit-Flow
     fi
-  - |
-    if [[ "$INSTALL_COMPOSER" = "true" ]]; then
-      npm run env docker-run -- php composer install
-    fi
 
-before_script:
-    - bash bin/install-wp-tests.sh wordpress_test root '' localhost $WP_VERSION
-    - export COMPOSER_BIN_DIR="$HOME/.config/composer/vendor/bin"
-    - export PATH="$COMPOSER_BIN_DIR:$PATH"
-    - |
-        if [[ ${TRAVIS_PHP_VERSION:0:2} == "7." ]]; then
-          composer global require "phpunit/phpunit=5.7.*"
-        fi
-    - phpunit --version
-    - php --version
+# before_script:
+#     - bash bin/install-wp-tests.sh wordpress_test root '' localhost $WP_VERSION
+#     - export COMPOSER_BIN_DIR="$HOME/.config/composer/vendor/bin"
+#     - export PATH="$COMPOSER_BIN_DIR:$PATH"
+#     - |
+#         if [[ ${TRAVIS_PHP_VERSION:0:2} == "7." ]]; then
+#           composer global require "phpunit/phpunit=5.7.*"
+#         fi
+#     - phpunit --version
+#     - php --version
 
 script: 
-  - phpunit
+  # - phpunit
   - $( npm bin )/wp-scripts test-e2e --config=./tests/e2e/config/jest.config.js
 
 sudo: false
