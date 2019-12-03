@@ -1,5 +1,8 @@
 language: php
 
+services:
+  - docker
+
 php:
     - "5.6"
     - "7.2"
@@ -54,7 +57,7 @@ before_install:
     fi
 
 install:
-  - npm install
+  - npm ci
   - npm run build
   - |
     if [[ "$INSTALL_WORDPRESS" = "true" ]]; then
