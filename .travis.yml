@@ -13,7 +13,10 @@ services:
 
 env:
     - WP_VERSION=latest WP_MULTISITE=0 #Current stable release
-    - INSTALL_WORDPRESS: true
+  global:
+    - PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
+    - WP_DEVELOP_DIR: ./wordpress
+
 
 # Test WP 5.1 and 5.2 and on PHP 5.6, 7.2 and 7.3 (w and w/o multisite enabled)
 
