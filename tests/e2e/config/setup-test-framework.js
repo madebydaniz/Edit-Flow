@@ -61,7 +61,8 @@ async function trashExistingPosts() {
 	await visitAdminPage( 'edit.php' );
 
 	// If this selector doesn't exist there are no posts for us to delete.
-	const bulkSelector = await page.$( '#bulk-action-selector-top' );
+  const bulkSelector = await page.$( '#bulk-action-selector-top' );
+  console.log(bulkSelector);
 	if ( ! bulkSelector ) {
 		return;
 	}
