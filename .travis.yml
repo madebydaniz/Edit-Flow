@@ -7,7 +7,7 @@ services:
 
 env:
   global:
-    - PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
+    - PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: false
     - WP_DEVELOP_DIR: ./wordpress
     - LOCAL_SCRIPT_DEBUG: false
     - INSTALL_COMPOSER: true
