@@ -56,7 +56,7 @@ before_install:
 
 install:
   # Build Edit Flow.
-  - npm ci
+  - npm install
   - npm run build
   - |
     if [[ "$INSTALL_WORDPRESS" = "true" ]]; then
