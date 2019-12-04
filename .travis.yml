@@ -5,7 +5,6 @@ language: generic
 services:
   - docker
 
-
 env:
   global:
     - PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
@@ -55,6 +54,7 @@ install:
 
       # Install WordPress.
       cd wordpress
+      chmod -R 777 .
       npm install dotenv wait-on
       npm run env:start
       sleep 10
