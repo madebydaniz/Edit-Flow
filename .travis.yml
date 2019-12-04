@@ -7,9 +7,7 @@ services:
 
 env:
   global:
-    - PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: false
     - WP_DEVELOP_DIR: ./wordpress
-    - LOCAL_SCRIPT_DEBUG: false
     - INSTALL_COMPOSER: true
     - INSTALL_WORDPRESS: true
     - WP_VERSION: latest 
@@ -56,7 +54,7 @@ before_install:
 
 install:
   # Build Edit Flow.
-  - npm install
+  - npm ci
   - npm run build
   - |
     if [[ "$INSTALL_WORDPRESS" = "true" ]]; then
