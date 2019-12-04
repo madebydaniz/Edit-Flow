@@ -2,7 +2,8 @@
  * WordPress dependencies
  */
 
-import { visitAdminPage, createNewPost } from "@wordpress/e2e-test-utils";
+import { visitAdminPage, switchUserToAdmin } from "@wordpress/e2e-test-utils";
+
 
 describe("Edit Flow", () => {
   beforeAll(async () => {
