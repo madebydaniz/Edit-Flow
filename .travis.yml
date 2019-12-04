@@ -17,8 +17,38 @@ env:
     - PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
     - WP_DEVELOP_DIR: ./wordpress
     - LOCAL_SCRIPT_DEBUG: false
-    - INSTALL_COMPOSER: false
+    - INSTALL_COMPOSER: true
     - INSTALL_WORDPRESS: true
+    - WP_VERSION: latest 
+    - WP_MULTISITE: 0
+
+matrix:
+  include:
+    # current stable release w/ multisite
+    - php: "5.6"
+      env: WP_VERSION=5.1 WP_MULTISITE=0
+    - php: "7.2"
+      env: WP_VERSION=5.1 WP_MULTISITE=0
+    - php: "7.3"
+      env: WP_VERSION=5.1 WP_MULTISITE=0
+    - php: "5.6"
+      env: WP_VERSION=5.1 WP_MULTISITE=1
+    - php: "7.2"
+      env: WP_VERSION=5.1 WP_MULTISITE=1
+    - php: "7.3"
+      env: WP_VERSION=5.1 WP_MULTISITE=1
+    - php: "5.6"
+      env: WP_VERSION=5.2 WP_MULTISITE=0
+    - php: "7.2"
+      env: WP_VERSION=5.2 WP_MULTISITE=0
+    - php: "7.3"
+      env: WP_VERSION=5.2 WP_MULTISITE=0
+    - php: "5.6"
+      env: WP_VERSION=5.2 WP_MULTISITE=1
+    - php: "7.2"
+      env: WP_VERSION=5.2 WP_MULTISITE=1
+    - php: "7.3"
+      env: WP_VERSION=5.2 WP_MULTISITE=1
 
 before_install:
   - nvm install --latest-npm
@@ -75,21 +105,19 @@ install:
     if [[ "$INSTALL_COMPOSER" = "true" ]]; then
       npm run env docker-run -- php composer install
     fi
-  - |
-    if [[ "$E2E_ROLE" = "author" ]]; then
-      npm run env cli -- user create author author@example.com --role=author --user_pass=authpass
-      npm run env cli -- post update 1 --post_author=2
-    fi
 
-jobs:
-  include:
-    - name: E2E tests (Admin) (1/4)
-      env: FORCE_REDUCED_MOTION=true PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=
-      script:
-        - $( npm bin )/wp-scripts test-e2e --config=./packages/e2e-tests/jest.config.js --listTests > ~/.jest-e2e-tests
-        - $( npm bin )/wp-scripts test-e2e --config=./packages/e2e-tests/jest.config.js --cacheDirectory="$HOME/.jest-cache" --runTestsByPath $( awk 'NR % 4 == 0' < ~/.jest-e2e-tests )
+script:
+  - npm run test-unit-php
+  - $( npm bin )/wp-scripts test-e2e --config=./tests/e2e/jest.config.js
+  
+# jobs:
+#   include:
+#     - name: E2E tests
+#       env: FORCE_REDUCED_MOTION=true PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=
+#       script:
+#         - $( npm bin )/wp-scripts test-e2e --config=./tests/e2e/jest.config.js
 
-  allow_failures:
+#   allow_failures:
     # nothing is allowed to fail at the moment
     
 # dist: trusty

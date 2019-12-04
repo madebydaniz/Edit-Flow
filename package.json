@@ -16,11 +16,12 @@
     "lint:js": "wp-scripts lint-js",
     "lint:pkg-json": "wp-scripts lint-pkg-json",
     "test-e2e": "wp-scripts test-e2e --config tests/e2e/jest.config.js",
-    "test-e2e:watch": "npm run test-e2e -- --watch"
+    "test-e2e:watch": "npm run test-e2e -- --watch",
+    "test-unit-php": "wp-scripts env test-php"
   },
   "wp-env": {
-    "plugin-dir": "gutenberg",
-    "plugin-name": "Gutenberg",
+    "plugin-dir": "Edit-Flow",
+    "plugin-name": "Edit Flow",
     "docker-template": "./bin/docker-compose.override.yml.template",
     "welcome-logo": [
       " _______  ______   ___   _______    _______  ___      _______  _     _  ",
