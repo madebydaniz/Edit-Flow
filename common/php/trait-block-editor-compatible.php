@@ -57,11 +57,21 @@ trait Block_Editor_Compatible {
 
 		if ( $this->should_apply_compat() ) {
 			foreach ( $this->hooks as $hook => $callback ) {
-				if ( is_callable( [ $this, $callback ] ) ) {
-					remove_action( $hook, array( $this->ef_module, $callback ) );
-					add_action( $hook, array( $this, $callback ) );
+				if ( is_array( $callback ) ) {
+					foreach ( $callback as $cb ) {
+						$this->replace_hook( $hook, $cb );
+					}
+				} else {
+					$this->replace_hook( $hook, $callback );
 				}
 			}
+		}
+	}
+
+	function replace_hook( $hook, $callback ) {
+		if ( is_callable( [ $this, $callback ] ) ) {
+			remove_action( $hook, array( $this->ef_module, $callback ) );
+			add_action( $hook, array( $this, $callback ) );
 		}
 	}
 

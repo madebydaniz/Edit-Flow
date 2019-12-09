@@ -12,7 +12,7 @@
 
  if ( !class_exists( 'EF_Custom_Status' ) ) {
 
-class EF_Custom_Status extends EF_Module {
+class EF_Custom_Status extends EF_Module_With_View {
 
 	var $module;
 
@@ -24,7 +24,7 @@ class EF_Custom_Status extends EF_Module {
 	 * @var array
 	 */
 	protected $compat_hooks = [
-		'admin_enqueue_scripts' => 'action_admin_enqueue_scripts',
+		'admin_enqueue_scripts' => [ 'enqueue_admin_styles', 'enqueue_admin_scripts' ]
 	];
 
 	// This is taxonomy name used to store all our custom statuses
@@ -88,7 +88,8 @@ class EF_Custom_Status extends EF_Module {
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
 
 		// Load CSS and JS resources that we probably need
-		add_action( 'admin_enqueue_scripts', array( $this, 'action_admin_enqueue_scripts' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_scripts' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_styles' ) );
 		add_action( 'admin_notices', array( $this, 'no_js_notice' ) );
 		add_action( 'admin_print_scripts', array( $this, 'post_admin_header' ) );
 
@@ -299,23 +300,17 @@ class EF_Custom_Status extends EF_Module {
 	 * - jQuery Sortable plugin is used for drag and dropping custom statuses
 	 * - We have other custom code for Quick Edit and JS niceties
 	 */
-	function action_admin_enqueue_scripts() {
-		global $pagenow;
-
-		if ( $this->disable_custom_statuses_for_post_type() ) {
-			return;
-		}
-
+	function enqueue_admin_scripts() {
+	
 		// Load Javascript we need to use on the configuration views (jQuery Sortable and Quick Edit)
-		if ( $this->is_whitelisted_settings_view( $this->module->name ) ) {
+		if ( $this->is_current_module_settings_view() ) {
 			wp_enqueue_script( 'jquery-ui-sortable' );
 			wp_enqueue_script( 'edit-flow-custom-status-configure', $this->module_url . 'lib/custom-status-configure.js', array( 'jquery', 'jquery-ui-sortable', 'edit-flow-settings-js' ), EDIT_FLOW_VERSION, true );
 		}
 
 		// Custom javascript to modify the post status dropdown where it shows up
-		if ( $this->is_whitelisted_page() ) {
+		if ( $this->is_custom_status_view() ) {
 			wp_enqueue_script( 'edit_flow-custom_status', $this->module_url . 'lib/custom-status.js', array( 'jquery','post' ), EDIT_FLOW_VERSION, true );
-			wp_enqueue_style( 'edit_flow-custom_status', $this->module_url . 'lib/custom-status.css', false, EDIT_FLOW_VERSION, 'all' );
 			wp_localize_script('edit_flow-custom_status', '__ef_localize_custom_status', array(
 				'no_change' => esc_html__( "&mdash; No Change &mdash;", 'edit-flow' ),
 				'published' => esc_html__( 'Published', 'edit-flow' ),
@@ -326,8 +321,12 @@ class EF_Custom_Status extends EF_Module {
 				'cancel'    => esc_html__( 'Cancel', 'edit-flow' ),
 			));
 		}
+	}
 
-
+	function enqueue_admin_styles() {
+		if ( $this->is_custom_status_view() ) {
+			wp_enqueue_style( 'edit_flow-custom_status', $this->module_url . 'lib/custom-status.css', false, EDIT_FLOW_VERSION, 'all' );
+		}
 	}
 
 	/**
@@ -335,7 +334,7 @@ class EF_Custom_Status extends EF_Module {
 	 * Javascript is needed for custom statuses to be fully functional
 	 */
 	function no_js_notice() {
-		if( $this->is_whitelisted_page() ) :
+		if ( $this->is_custom_status_view() ) :
 			?>
 			<style type="text/css">
 			/* Hide post status dropdown by default in case of JS issues **/
@@ -354,26 +353,6 @@ class EF_Custom_Status extends EF_Module {
 	}
 
 	/**
-	 * Check whether custom status stuff should be loaded on this page
-	 *
-	 * @todo migrate this to the base module class
-	 */
-	function is_whitelisted_page() {
-		global $pagenow;
-
-		if ( !in_array( $this->get_current_post_type(), $this->get_post_types_for_module( $this->module ) ) )
-			return false;
-
-		$post_type_obj = get_post_type_object( $this->get_current_post_type() );
-
-		if( ! current_user_can( $post_type_obj->cap->edit_posts ) )
-			return false;
-
-		// Only add the script to Edit Post and Edit Page pages -- don't want to bog down the rest of the admin with unnecessary javascript
-		return in_array( $pagenow, array( 'post.php', 'edit.php', 'post-new.php', 'page.php', 'edit-pages.php', 'page-new.php' ) );
-	}
-
-	/**
 	 * Adds all necessary javascripts to make custom statuses work
 	 *
 	 * @todo Support private and future posts on edit.php view
@@ -388,7 +367,7 @@ class EF_Custom_Status extends EF_Module {
 		wp_get_current_user() ;
 
 		// Only add the script to Edit Post and Edit Page pages -- don't want to bog down the rest of the admin with unnecessary javascript
-		if ( $this->is_whitelisted_page() ) {
+		if ( $this->is_custom_status_view() ) {
 
 			$custom_statuses = $this->get_custom_statuses();
 
@@ -1777,6 +1756,30 @@ class EF_Custom_Status extends EF_Module {
 		$actions['view'] = '<a href="' . esc_url( $preview_link ) . '" title="' . esc_attr( sprintf( __( 'Preview &#8220;%s&#8221;' ), $post->post_title ) ) . '" rel="permalink">' . __( 'Preview' ) . '</a>';
 		return $actions;
 	}
+
+	/**
+	 * Check whether current view is relavant to this module and whether the user has access to it
+	 *
+	 * @return bool
+	 */
+	public function is_custom_status_view() {
+		
+		if( $this->is_current_module_settings_view() ) {
+			return true;
+		}
+
+		if( ! $this->is_active_view( array( 'post.php', 'edit.php', 'post-new.php', 'page.php', 'edit-pages.php', 'page-new.php' ) ) ) {
+			return false;
+		}
+
+		$post_type_obj = get_post_type_object( $this->get_current_post_type() );
+		if( $post_type_obj && ! current_user_can( $post_type_obj->cap->edit_posts ) ) {
+			return false;
+		}
+
+		return true;
+	}
+
 }
 
 }
