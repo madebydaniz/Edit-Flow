@@ -111,6 +111,9 @@ class edit_flow {
 		// Edit Flow base module
 		require_once( EDIT_FLOW_ROOT . '/common/php/class-module.php' );
 
+		// Edit Flow module with public assets (js, css, etc)
+		require_once( EDIT_FLOW_ROOT . '/common/php/class-module-with-view.php' );
+
 		// Edit Flow Block Editor Compat trait
 		require_once( EDIT_FLOW_ROOT . '/common/php/trait-block-editor-compatible.php' );
 
