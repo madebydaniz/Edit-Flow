@@ -1419,6 +1419,11 @@ class EF_Custom_Status extends EF_Module {
 			return null;
 		}
 
+		// The slug has been set by the meta box
+		if ( isset( $_POST['post_name'] ) ) {
+				return null;
+		}
+
 		// If the slug is already set, return it, we're done here
 		if ( $post->post_name ) {
 			return $slug;
@@ -1551,11 +1556,14 @@ class EF_Custom_Status extends EF_Module {
 	public function fix_get_sample_permalink( $permalink, $post_id, $title, $name, $post ) {
 		remove_filter( 'get_sample_permalink', array( $this, 'fix_get_sample_permalink' ), 10, 5 );
 		remove_action( 'pre_wp_unique_post_slug', array( $this, 'fix_post_name' ), 11, 6 );
-
-		$new_name = $name ? $name : $post->post_name;
 		
-		var_dump( $title, $name );
-		$permalink = get_sample_permalink( $post_id, null, sanitize_title( $new_name ? $new_name : $title, $post->ID ) );
+		if ( empty( $name ) ) {
+			$new_name = sanitize_title( $post->post_name ? $post->post_name : $post->post_title, $post->ID );
+		} else {
+			$new_name = $name;
+		}
+		
+		$permalink = get_sample_permalink( $post_id, $title, $new_name );
 		
 		add_filter( 'get_sample_permalink', array( $this, 'fix_get_sample_permalink' ), 10, 5 );
 		add_action( 'pre_wp_unique_post_slug', array( $this, 'fix_post_name' ), 11, 6 );
