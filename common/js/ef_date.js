@@ -1,8 +1,10 @@
-jQuery( document ).ready( function( $ ) {
-  var dateTimePicks = jQuery( '.date-time-pick' );
+/* global document, jQuery, ef_week_first_day  */
+
+jQuery( document ).ready( function() {
+	const dateTimePicks = jQuery( '.date-time-pick' );
 
 	dateTimePicks.each( function() {
-		var $dTP = jQuery(this);
+		const $dTP = jQuery( this );
 
 		$dTP.datetimepicker( {
 			dateFormat: 'M dd yy',
@@ -16,9 +18,9 @@ jQuery( document ).ready( function( $ ) {
 		} );
 	} );
 
-	var datePicks = jQuery( '.date-pick' );
+	const datePicks = jQuery( '.date-pick' );
 	datePicks.each( function() {
-		var $datePicker = jQuery( this );
+		const $datePicker = jQuery( this );
 
 		$datePicker.datepicker( {
 			firstDay: ef_week_first_day,
